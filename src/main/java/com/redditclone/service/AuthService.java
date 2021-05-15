@@ -1,5 +1,7 @@
 package com.redditclone.service;
 
+import com.redditclone.dto.AuthenticationResponse;
+import com.redditclone.dto.LoginRequest;
 import com.redditclone.dto.RegisterRequest;
 import com.redditclone.exception.SpringRedditException;
 import com.redditclone.model.NotificationEmail;
@@ -7,7 +9,12 @@ import com.redditclone.model.User;
 import com.redditclone.model.VerificationToken;
 import com.redditclone.repository.UserRepository;
 import com.redditclone.repository.VerificationTokenRepository;
+import com.redditclone.security.JWTProvider;
 import lombok.AllArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +33,8 @@ public class AuthService {
     private final UserRepository userRepository;
     private final VerificationTokenRepository verificationTokenRepository;
     private final MailService mailService;
+    private final AuthenticationManager authenticationManager;
+    private final JWTProvider jwtProvider;
 
     @Transactional
     public void signup(RegisterRequest registerRequest){
@@ -64,5 +73,12 @@ public class AuthService {
             user.setEnabled(true);
             userRepository.save(user);
 
+    }
+
+    public AuthenticationResponse authenticate(LoginRequest loginRequest) {
+        Authentication authentication =authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),loginRequest.getPassword()));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String s = jwtProvider.generateToken(authentication);
+        return new AuthenticationResponse(s,loginRequest.getUsername());
     }
 }
