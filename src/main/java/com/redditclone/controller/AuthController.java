@@ -1,4 +1,4 @@
-package com.redditclone;
+package com.redditclone.controller;
 
 import com.redditclone.dto.AuthenticationResponse;
 import com.redditclone.dto.RegisterRequest;
