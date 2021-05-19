@@ -28,7 +28,7 @@ public class Test2 {
     }
 
     public static void main(String[] args) {
-        List<Integer> skills=List.of(12,4,6,13,5,10);
+        //List<Integer> skills=List.of(12,4,6,13,5,10);
         int minPlayers=3;
         int minLevel=4;
         int maxLevel=10;
