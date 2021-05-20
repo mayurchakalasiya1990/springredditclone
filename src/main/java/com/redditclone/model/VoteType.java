@@ -7,4 +7,6 @@ public enum VoteType {
     VoteType(int direction){
     }
 
+
+
 }
