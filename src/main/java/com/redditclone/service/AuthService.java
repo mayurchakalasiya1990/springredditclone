@@ -2,6 +2,7 @@ package com.redditclone.service;
 
 import com.redditclone.dto.AuthenticationResponse;
 import com.redditclone.dto.LoginRequest;
+import com.redditclone.dto.RefreshTokenRequest;
 import com.redditclone.dto.RegisterRequest;
 import com.redditclone.exception.SpringRedditException;
 import com.redditclone.model.NotificationEmail;
@@ -11,6 +12,7 @@ import com.redditclone.repository.UserRepository;
 import com.redditclone.repository.VerificationTokenRepository;
 import com.redditclone.security.JWTProvider;
 import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -38,6 +40,7 @@ public class AuthService {
     private final MailService mailService;
     private final AuthenticationManager authenticationManager;
     private final JWTProvider jwtProvider;
+    private final RefreshTokenService refreshTokenService;
 
     @Transactional
     public void signup(RegisterRequest registerRequest){
@@ -82,7 +85,12 @@ public class AuthService {
         Authentication authentication =authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),loginRequest.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String s = jwtProvider.generateToken(authentication);
-        return new AuthenticationResponse(s,loginRequest.getUsername());
+        return AuthenticationResponse.builder()
+                .authenticationToken(s)
+                .refreshToken(refreshTokenService.generateRefreshToken().getToken())
+                .expiresAt(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()))
+                .username(loginRequest.getUsername())
+                .build();
     }
 
     @Transactional(readOnly = true)
@@ -96,5 +104,17 @@ public class AuthService {
     public boolean isLoggedIn() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return !(authentication instanceof AnonymousAuthenticationToken) && authentication.isAuthenticated();
+    }
+
+    public AuthenticationResponse refreshToken(RefreshTokenRequest refreshTokenRequest) {
+        refreshTokenService.validateRefershToken(refreshTokenRequest.getRefreshToken());
+        String token=jwtProvider.generateTokenWithUserName(refreshTokenRequest.getUsername());
+        return  AuthenticationResponse.builder()
+                .authenticationToken(token)
+                .refreshToken(refreshTokenRequest.getRefreshToken())
+                .expiresAt(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()))
+                .username(refreshTokenRequest.getUsername())
+                .build();
+
     }
 }

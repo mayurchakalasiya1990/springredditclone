@@ -1,0 +1,3 @@
+- Default value of ddl-auto:
+        jpa. hibernate. ddl-auto explicitly and the standard Hibernate property values are none , validate , update , create-drop .
+        Spring Boot chooses a default value for you based on whether it thinks your database is embedded (default create-drop ) or not (default none ).

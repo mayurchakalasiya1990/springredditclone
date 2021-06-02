@@ -3,6 +3,7 @@ package com.redditclone.security;
 import com.redditclone.exception.SpringRedditException;
 import io.jsonwebtoken.Jwts;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,11 +22,12 @@ import java.security.KeyStoreException;
 import java.security.PublicKey;
 
 @Component
-@AllArgsConstructor
 public class JWTAuthFilter extends OncePerRequestFilter {
 
-    private final JWTProvider jwtProvider;
-    private final UserDetailsService userDetailsService;
+    @Autowired
+    private JWTProvider jwtProvider;
+    @Autowired
+    private UserDetailsService userDetailsService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
